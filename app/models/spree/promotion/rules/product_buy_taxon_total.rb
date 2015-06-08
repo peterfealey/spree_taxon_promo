@@ -7,6 +7,10 @@ module Spree
     # attr_accessible :preferred_amount, :preferred_operator, :preferred_taxon
 
     OPERATORS = ['gt', 'gte']
+    
+     def applicable?(promotable)
+      promotable.is_a?(Spree::Order)
+    end
 
     def eligible?(order, options = {})
       item_total = 0.0
