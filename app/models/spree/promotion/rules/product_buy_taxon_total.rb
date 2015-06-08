@@ -11,13 +11,35 @@ module Spree
      def applicable?(promotable)
       promotable.is_a?(Spree::Order)
     end
-
+    
     def eligible?(order, options = {})
       item_total = 0.0
+      match_taxons = preferred_taxon.split(',')
       order.line_items.each do |line_item|
-        item_total += line_item.amount if line_item.product.taxons.where(:name => preferred_taxon).present?
+        matched = false
+        match_taxons.each do |tx|
+          matched = true if line_item.product.taxons.where(:name => tx).present?
+        end
+        item_total += line_item.amount if matched
       end
-      item_total.send(preferred_operator == 'gte' ? :>= : :>, BigDecimal.new(preferred_amount.to_s))
+      # item_total.send(preferred_operator == 'gte' ? :>= : :>, BigDecimal.new(preferred_amount.to_s))
+
+      lower_limit_condition = item_total.send(preferred_operator_min == 'gte' ? :>= : :>, BigDecimal.new(preferred_amount_min.to_s))
+      upper_limit_condition = item_total.send(preferred_operator_max == 'lte' ? :<= : :<, BigDecimal.new(preferred_amount_max.to_s))
+
+      eligibility_errors.add(:base, ineligible_message_max) unless upper_limit_condition
+      eligibility_errors.add(:base, ineligible_message_min) unless lower_limit_condition
+
+      eligibility_errors.empty?
+    end
+
+    def actionable?(line_item)
+
+      match_taxons = preferred_taxon.split(',')
+      match_taxons.each do |tx|
+        return true if line_item.product.taxons.where(:name => tx).present?
+      end
+      return false
     end
   end
 end
