@@ -1,8 +1,15 @@
 module Spree
   class Promotion::Rules::ProductBuyTaxonTotal < PromotionRule
-    preference :amount, :decimal, :default => 100.00
-    preference :operator, :string, :default => '>'
+    preference :amount_min, :decimal, default: 100.00
+    preference :operator_min, :string, default: '>'
+    preference :amount_max, :decimal, default: 1000.00
+    preference :operator_max, :string, default: '<'
     preference :taxon, :string, :default => ''
+
+    # attr_accessible :preferred_amount, :preferred_operator, :preferred_taxon
+
+    OPERATORS_MIN = ['gt', 'gte']
+    OPERATORS_MAX = ['lt','lte']
 
     # attr_accessible :preferred_amount, :preferred_operator, :preferred_taxon
 
